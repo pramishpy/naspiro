@@ -455,6 +455,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -464,8 +465,13 @@ const App = () => {
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      
+      // Show coming soon modal when user signs up or logs in
+      if (event === 'SIGNED_IN' && session?.user) {
+        setShowComingSoon(true);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -474,6 +480,7 @@ const App = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setShowComingSoon(false);
   };
 
   if (loading) {
@@ -485,11 +492,6 @@ const App = () => {
         </div>
       </div>
     );
-  }
-
-  // Show "Coming Soon" page if user is logged in
-  if (user) {
-    return <ProductsComingSoon user={user} onSignOut={handleSignOut} />;
   }
 
   return (
@@ -527,7 +529,17 @@ const App = () => {
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={(user) => setUser(user)}
+        onAuthSuccess={(user) => {
+          setUser(user);
+          setShowAuthModal(false);
+        }}
+      />
+
+      {/* Coming Soon Modal */}
+      <ProductsComingSoon 
+        user={user}
+        onSignOut={handleSignOut}
+        onClose={() => setShowComingSoon(false)}
       />
     </div>
   );

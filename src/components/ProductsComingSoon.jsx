@@ -1,10 +1,20 @@
 import React from 'react';
-import { Rocket, Sparkles, Bell } from 'lucide-react';
+import { Rocket, Sparkles, Bell, X } from 'lucide-react';
 
-const ProductsComingSoon = ({ user, onSignOut }) => {
+const ProductsComingSoon = ({ user, onSignOut, onClose }) => {
+  if (!user) return null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-6" onClick={onClose}>
+      <div className="max-w-2xl w-full relative animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-4 -right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors z-10"
+        >
+          <X size={24} />
+        </button>
+
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center border border-gray-100">
           {/* Icon */}
           <div className="mb-8 flex justify-center">
@@ -70,17 +80,25 @@ const ProductsComingSoon = ({ user, onSignOut }) => {
             </div>
           </div>
 
-          {/* Sign Out */}
-          <button
-            onClick={onSignOut}
-            className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
-          >
-            Sign Out
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={onClose}
+              className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-all"
+            >
+              Continue Browsing
+            </button>
+            <button
+              onClick={onSignOut}
+              className="text-gray-500 hover:text-gray-700 px-8 py-3 rounded-full font-semibold transition-colors border border-gray-200 hover:border-gray-300"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Footer Note */}
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-white text-sm mt-6 drop-shadow-lg">
           Expected launch: Q2 2026 • Questions? Email us at support@naspiro.com
         </p>
       </div>
