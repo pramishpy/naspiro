@@ -99,7 +99,7 @@ const ProductsComingSoon = ({ user, onSignOut, onClose }) => {
 
         {/* Footer Note */}
         <p className="text-center text-white text-sm mt-6 drop-shadow-lg">
-          Expected launch: Q2 2026 • Questions? Email us at support@naspiro.com
+          Expected launch: Q2 2026 • Questions? Email us at shinnningsea@gmail.com
         </p>
       </div>
     </div>

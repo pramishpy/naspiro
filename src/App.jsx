@@ -437,7 +437,7 @@ const Footer = () => (
       <div>
         <h4 className="text-white font-bold mb-6">Contact</h4>
         <ul className="space-y-4">
-          <li>support@naspiro.com</li>
+          <li>shinnningsea@gmail.com</li>
           <li>1-800-BREATHE</li>
           <li>Los Angeles, CA</li>
         </ul>
