@@ -1,8 +1,8 @@
 import React from 'react';
 import { Rocket, Sparkles, Bell, X } from 'lucide-react';
 
-const ProductsComingSoon = ({ user, onSignOut, onClose }) => {
-  if (!user) return null;
+const ProductsComingSoon = ({ isOpen, user, onSignOut, onClose }) => {
+  if (!isOpen || !user) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-6" onClick={onClose}>

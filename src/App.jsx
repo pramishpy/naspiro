@@ -537,6 +537,7 @@ const App = () => {
 
       {/* Coming Soon Modal */}
       <ProductsComingSoon 
+        isOpen={showComingSoon}
         user={user}
         onSignOut={handleSignOut}
         onClose={() => setShowComingSoon(false)}
