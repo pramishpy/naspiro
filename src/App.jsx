@@ -14,10 +14,13 @@ import {
   ArrowRight,
   Zap
 } from 'lucide-react';
+import { supabase } from './supabaseClient';
+import AuthModal from './components/AuthModal';
+import ProductsComingSoon from './components/ProductsComingSoon';
 
 // --- Components ---
 
-const Navbar = () => {
+const Navbar = ({ onOpenAuth, user, onSignOut }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -50,9 +53,26 @@ const Navbar = () => {
               {item}
             </a>
           ))}
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20">
-            Get Naspiro
-          </button>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {user.user_metadata?.name || user.email?.split('@')[0]}
+              </span>
+              <button 
+                onClick={onSignOut}
+                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium hover:bg-gray-300 transition-all"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={onOpenAuth}
+              className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20"
+            >
+              Get Naspiro
+            </button>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -74,16 +94,39 @@ const Navbar = () => {
               {item}
             </a>
           ))}
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium w-full">
-            Get Naspiro
-          </button>
+          {user ? (
+            <>
+              <span className="text-sm text-gray-600">
+                {user.user_metadata?.name || user.email?.split('@')[0]}
+              </span>
+              <button 
+                onClick={() => {
+                  onSignOut();
+                  setIsOpen(false);
+                }}
+                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium w-full"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={() => {
+                onOpenAuth();
+                setIsOpen(false);
+              }}
+              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium w-full"
+            >
+              Get Naspiro
+            </button>
+          )}
         </div>
       )}
     </nav>
   );
 };
 
-const Hero = () => {
+const Hero = ({ onOpenAuth }) => {
   return (
     <header className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-white pt-20">
       {/* Background Animated Elements */}
@@ -108,7 +151,10 @@ const Hero = () => {
             Every day, you breathe 22 pounds of air. Naspiro filters, warms, and moisturizes every single breath. The ultimate ergonomic nasal cap for modern lung protection.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20">
+            <button 
+              onClick={onOpenAuth}
+              className="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20"
+            >
               Pre-Order Now <ArrowRight size={20} />
             </button>
             <button className="bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
@@ -406,10 +452,50 @@ const Footer = () => (
 // --- Main App Component ---
 
 const App = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for changes on auth state (logged in, signed out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show "Coming Soon" page if user is logged in
+  if (user) {
+    return <ProductsComingSoon user={user} onSignOut={handleSignOut} />;
+  }
+
   return (
     <div className="font-sans antialiased text-gray-900 bg-white selection:bg-blue-100 selection:text-blue-900">
-      <Navbar />
-      <Hero />
+      <Navbar onOpenAuth={() => setShowAuthModal(true)} user={user} onSignOut={handleSignOut} />
+      <Hero onOpenAuth={() => setShowAuthModal(true)} />
       <ProblemSection />
       <SolutionSection />
       <AudienceSection />
@@ -422,7 +508,10 @@ const App = () => {
             Join the revolution in respiratory health. Get Naspiro and transform the air you breathe into a source of vitality.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all">
+            <button 
+              onClick={() => setShowAuthModal(true)}
+              className="bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all"
+            >
                 Order Naspiro Now
             </button>
              <button className="bg-blue-700 text-white border border-blue-400 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-800 transition-all">
@@ -433,6 +522,13 @@ const App = () => {
       </section>
 
       <Footer />
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={(user) => setUser(user)}
+      />
     </div>
   );
 };
