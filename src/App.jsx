@@ -14,13 +14,11 @@ import {
   ArrowRight,
   Zap
 } from 'lucide-react';
-import { supabase } from './supabaseClient';
-import AuthModal from './components/AuthModal';
-import ProductsComingSoon from './components/ProductsComingSoon';
+const ETSY_URL = 'https://www.etsy.com/shop/pschubcityms?dd_referrer=#items';
 
 // --- Components ---
 
-const Navbar = ({ onOpenAuth, user, onSignOut }) => {
+const Navbar = ({ orderUrl }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -53,26 +51,12 @@ const Navbar = ({ onOpenAuth, user, onSignOut }) => {
               {item}
             </a>
           ))}
-          {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {user.user_metadata?.name || user.email?.split('@')[0]}
-              </span>
-              <button 
-                onClick={onSignOut}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-medium hover:bg-gray-300 transition-all"
-              >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={onOpenAuth}
-              className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20"
-            >
-              Get Naspiro
-            </button>
-          )}
+          <a
+            href={orderUrl}
+            className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20"
+          >
+            Get Naspiro
+          </a>
         </div>
 
         {/* Mobile Toggle */}
@@ -94,39 +78,20 @@ const Navbar = ({ onOpenAuth, user, onSignOut }) => {
               {item}
             </a>
           ))}
-          {user ? (
-            <>
-              <span className="text-sm text-gray-600">
-                {user.user_metadata?.name || user.email?.split('@')[0]}
-              </span>
-              <button 
-                onClick={() => {
-                  onSignOut();
-                  setIsOpen(false);
-                }}
-                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium w-full"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <button 
-              onClick={() => {
-                onOpenAuth();
-                setIsOpen(false);
-              }}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium w-full"
-            >
-              Get Naspiro
-            </button>
-          )}
+          <a
+            href={orderUrl}
+            onClick={() => setIsOpen(false)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium w-full text-center"
+          >
+            Get Naspiro
+          </a>
         </div>
       )}
     </nav>
   );
 };
 
-const Hero = ({ onOpenAuth }) => {
+const Hero = ({ orderUrl }) => {
   return (
     <header className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-white pt-20">
       {/* Background Animated Elements */}
@@ -151,12 +116,12 @@ const Hero = ({ onOpenAuth }) => {
             Every day, you breathe 22 pounds of air. Naspiro filters, warms, and moisturizes every single breath. The ultimate ergonomic nasal cap for modern lung protection.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button 
-              onClick={onOpenAuth}
+            <a
+              href={orderUrl}
               className="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20"
             >
               Pre-Order Now <ArrowRight size={20} />
-            </button>
+            </a>
             <button className="bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
               How it Works
             </button>
@@ -438,8 +403,7 @@ const Footer = () => (
         <h4 className="text-white font-bold mb-6">Contact</h4>
         <ul className="space-y-4">
           <li>shinnningsea@gmail.com</li>
-          <li>1-800-BREATHE</li>
-          <li>Los Angeles, CA</li>
+          <li>Hattiesburg, MS</li>
         </ul>
       </div>
     </div>
@@ -452,52 +416,10 @@ const Footer = () => (
 // --- Main App Component ---
 
 const App = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showComingSoon, setShowComingSoon] = useState(false);
-
-  useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      
-      // Show coming soon modal when user signs up or logs in
-      if (event === 'SIGNED_IN' && session?.user) {
-        setShowComingSoon(true);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setShowComingSoon(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="font-sans antialiased text-gray-900 bg-white selection:bg-blue-100 selection:text-blue-900">
-      <Navbar onOpenAuth={() => setShowAuthModal(true)} user={user} onSignOut={handleSignOut} />
-      <Hero onOpenAuth={() => setShowAuthModal(true)} />
+      <Navbar orderUrl={ETSY_URL} />
+      <Hero orderUrl={ETSY_URL} />
       <ProblemSection />
       <SolutionSection />
       <AudienceSection />
@@ -510,12 +432,12 @@ const App = () => {
             Join the revolution in respiratory health. Get Naspiro and transform the air you breathe into a source of vitality.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button 
-              onClick={() => setShowAuthModal(true)}
+            <a
+              href={ETSY_URL}
               className="bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all"
             >
-                Order Naspiro Now
-            </button>
+              Order Naspiro Now
+            </a>
              <button className="bg-blue-700 text-white border border-blue-400 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-800 transition-all">
                 Contact Sales
             </button>
@@ -524,24 +446,6 @@ const App = () => {
       </section>
 
       <Footer />
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={(user) => {
-          setUser(user);
-          setShowAuthModal(false);
-        }}
-      />
-
-      {/* Coming Soon Modal */}
-      <ProductsComingSoon 
-        isOpen={showComingSoon}
-        user={user}
-        onSignOut={handleSignOut}
-        onClose={() => setShowComingSoon(false)}
-      />
     </div>
   );
 };
