@@ -53,6 +53,8 @@ const Navbar = ({ orderUrl }) => {
           ))}
           <a
             href={orderUrl}
+            target="_blank"
+            rel="noreferrer"
             className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg shadow-blue-600/20"
           >
             Get Naspiro
@@ -80,6 +82,8 @@ const Navbar = ({ orderUrl }) => {
           ))}
           <a
             href={orderUrl}
+            target="_blank"
+            rel="noreferrer"
             onClick={() => setIsOpen(false)}
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium w-full text-center"
           >
@@ -118,6 +122,8 @@ const Hero = ({ orderUrl }) => {
           <div className="flex flex-col sm:flex-row gap-4">
             <a
               href={orderUrl}
+              target="_blank"
+              rel="noreferrer"
               className="bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-600/20"
             >
               Pre-Order Now <ArrowRight size={20} />
@@ -434,6 +440,8 @@ const App = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <a
               href={ETSY_URL}
+              target="_blank"
+              rel="noreferrer"
               className="bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all"
             >
               Order Naspiro Now
